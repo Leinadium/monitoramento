@@ -1,0 +1,49 @@
+# intervalo (em segundos) do testador
+interval = 120
+
+# porta utilizada para servir os resultados
+port = 2112
+
+# configurações para a status page
+[statuspage]
+    apikey = "apikey_teste"         # chave da api
+    pageid = "pageid_teste"         # id da página
+
+# configurações para o discord
+[discord]
+    role_id = "role_id_teste"        # discord role id
+    id = "identificador_teste"       # webhook_id
+    token = "token_teste"            # webhook_token
+
+# configurações para o redis
+[redis]
+    host = 'localhost'
+    port = 6379
+
+# um módulo para ser testado
+[[modules]]
+    name = "nome_teste"                 # nome do modulo
+    statuspage_id = "sp_id_teste"       # component_id (para statuspage)
+    notify = ["123", "456"]             # ids para serem notificados (para discord)
+
+    # define o teste para ser executado
+    # tipo pode ser HTTP, PORT, CUSTOM)
+    # apesar de suportado pelo TOML, somente usar um tipo de teste por módulo
+    # pois o nome do módulo será identico para cada teste
+
+    # exemplo para tipo HTTP
+    [[modules.test]]
+        type = "http"
+        url = "https://google.com"      # url para ser testada
+        method = "get"                  # metodo (get ou post)
+
+    # exemplo para tipo PORT
+    [[modules.test]]
+        type = "port"
+        host = "localhost"              # host da porta
+        port = 8080                     # numero da porta
+
+    # exemplo para tipo CUSTOM  (NAO IMPLEMENTADO)
+    [[modules.test]]
+        type = "custom"
+        runnable = "a/b/c"              # path do executável
