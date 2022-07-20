@@ -162,6 +162,7 @@ class TestadorBase:
 
         # criando webhook
         webhook = DiscordWebhook(
+            rate_limit_retry=True,
             url=self.discord_url,
             content=content,
             embeds=[{
