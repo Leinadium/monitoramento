@@ -3,6 +3,7 @@
 Contém a implementação da classe Testador, que faz os testes do projeto
 """
 import socket
+import logging
 from time import time
 from requests import get, post, Response
 from discord_webhook import DiscordWebhook
@@ -96,6 +97,9 @@ class TestadorBase:
             # atualiza a duracao do teste do modulo
             Prometheus.get(TipoPrometheus.TEST_DURATION, self.modulo.nome).set(self.duracao)
 
+        logging.info("Teste realizado -> Status: %s, Duracao: %0.3fs", self.status.nome(), self.duracao)
+
+
     def notificar_discord(self):
         """Notifica o status do módulo no Discord caso o status atual seja diferente do
         status armazenado no armazenamento.
@@ -134,7 +138,7 @@ class TestadorBase:
 
         # pega o ultimo status do armazenamento
         ultimo_status: Status = self.armazenamento.coletar(self.modulo.nome)
-        print(ultimo_status, self.status)
+        logging.debug(ultimo_status, self.status)
         if ultimo_status == self.status:
             # o status não mudou
             return
@@ -150,8 +154,11 @@ class TestadorBase:
             texto_status = "🟩 Operacional"
             cor = 0x00ff00
 
-        print("enviando webhook")
-        print(texto_status, cor)
+        logging.info(
+            "Enviando webhook do discord para o módulo %s com estado %s",
+            self.modulo.nome,
+            texto_status
+        )
 
         # criando webhook
         webhook = DiscordWebhook(
@@ -182,7 +189,7 @@ class TestadorBase:
         )
         r: Response = webhook.execute()
         if not r.ok:
-            print("Erro ao enviar Discord webhook")
+            logging.error("Erro ao enviar webhook discord para o módulo %s", self.modulo.nome)
 
         if self.armazenamento:
             self.armazenamento.guardar(self.modulo.nome, self.status)

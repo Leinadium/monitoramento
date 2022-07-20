@@ -3,6 +3,7 @@
 Contém o script para iniciar o loop de testadores
 e do client do prometheus
 """
+import logging
 from time import sleep
 from threading import Thread
 from prometheus_client import start_http_server
@@ -18,15 +19,21 @@ from app.models import Modulo
 from app.testador import TestadorBase
 
 if __name__ == "__main__":
+    # biblioteca de log
+    logging.basicConfig(
+        format='%(asctime)s [%(threadName)s] [%(levelname)s]: %(message)s',
+        datefmt='%Y-%m-%d %H-%M-%S',
+        level=logging.INFO
+    )
+
     # cria as configurações
     c = Configuracao('config.toml')
+    logging.info("Configurações carregadas")
 
     # cria os gauges do client do prometheus
     Prometheus.start()
-
-    # inicializa o client do prometheus
     start_http_server(port=c.port)
-    print(f"Servindo client na porta {c.port}")
+    logging.info(f"Servindo client na porta {c.port}")
 
     # criando os testadores
     testadores: List[TestadorBase] = []
@@ -49,22 +56,22 @@ if __name__ == "__main__":
             raise NotImplemented(f"Tipo de módulo {m.tipo.name} não suportado")
 
         testadores.append(testador)
+    logging.info("%d testadores carregados e criados", len(testadores))
 
     # loop dos testadores
+    logging.info("Iniciando loop dos testadores")
     while True:
         for t in testadores:
             # cria uma thread para cada testador e executa
-            print(f"Executando testador {t.modulo.nome}")
-            thread = Thread(target=t.testar)
+            logging.info("Executando testador [%s]", t.modulo.nome)
+            thread = Thread(target=t.testar, name=f'thread-{t.modulo.nome}')
             thread.start()
 
-        # apos todos os testadores, dorme o tempo necessario
-        print(f"Indo dormir por {c.interval} segundos")
         try:
             sleep(c.interval)
         except KeyboardInterrupt:
             # para o loop com um CTRL+C
             break
 
-    print("Fechando...")
+    logging.info("Fechando...")
 

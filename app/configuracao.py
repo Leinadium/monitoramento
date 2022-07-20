@@ -6,6 +6,7 @@ Um exemplo de arquivo TOML pode ser encontrado em `example.config.toml`
 """
 
 import tomli
+import logging
 
 from .enums import TipoModulo, TipoMetodoHTTP
 from .models import ParamsHTTP, ParamsPort, Modulo, ConfigDiscord, ConfigStatuspage, ConfigRedis
@@ -90,13 +91,13 @@ class Configuracao:
                     )
 
         except KeyError as e:
-            print("Chave não encontrada na configuração: ", e)
+            logging.exception("Chave não encontrada na configuração: %s", e)
             raise InvalidConfigFile()
         except ValueError as e:
-            print("Valor inválido na configuração: ", e)
+            logging.exception("Valor inválido na configuração: %s", e)
             raise InvalidConfigFile()
         except IndexError as e:
-            print("Indice inválido na configuração: ", e)
+            logging.exception("Indice inválido na configuração: %s", e)
             raise InvalidConfigFile()
 
     @property
