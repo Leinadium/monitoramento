@@ -4,13 +4,12 @@ Contém a implementação da dataclass `Modulo`,
 que permite armazenar informações sobre um módulo a ser testado
 """
 
-__all__ = ["ParamsHTTP", "ParamsPort", "Modulo", "ConfigDiscord", "ConfigStatuspage"]
+__all__ = ["ParamsHTTP", "ParamsPort", "Modulo", "ConfigDiscord", "ConfigStatuspage", "ConfigRedis"]
 
-# global packages
 from dataclasses import dataclass
-# local
+
 from .enums import TipoModulo, TipoMetodoHTTP
-# typing packages
+
 from typing import List, Union
 
 

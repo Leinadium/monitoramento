@@ -2,19 +2,17 @@
 
 Contém a implementação da classe Testador, que faz os testes do projeto
 """
-# global packages
 import socket
 from time import time
-
 from requests import get, post, Response
 from discord_webhook import DiscordWebhook
 from requests.exceptions import ConnectTimeout
-# local packages
-from .models import Modulo, ConfigDiscord, ConfigStatuspage
+
 from .armazenamento import Armazenamento
-from .prom import TipoPrometheus, Prometheus
 from .enums import TipoMetodoHTTP, Status
-# typing packages
+from .prom import TipoPrometheus, Prometheus
+from .models import Modulo, ConfigDiscord, ConfigStatuspage
+
 from typing import Optional
 
 
@@ -89,14 +87,14 @@ class TestadorBase:
 
         self.duracao = time() - _tempo
 
+        self.notificar_discord()
+        self.notificar_statuspage()
+
         if self.status is not None:
             # atualiza o status do modulo
             Prometheus.get(TipoPrometheus.STATUS, self.modulo.nome).set(self.status.value)
             # atualiza a duracao do teste do modulo
             Prometheus.get(TipoPrometheus.TEST_DURATION, self.modulo.nome).set(self.duracao)
-
-        self.notificar_discord()
-        self.notificar_statuspage()
 
     def notificar_discord(self):
         """Notifica o status do módulo no Discord caso o status atual seja diferente do
@@ -128,12 +126,15 @@ class TestadorBase:
                 ]
             }
         """
-        if self.discord is None:
+        if self.discord is None or not self.armazenamento:
             # discord não configurado
+            # ou armazenamento nao configurado
+            # não há nada pra fazer aqui, pula
             return
 
         # pega o ultimo status do armazenamento
         ultimo_status: Status = self.armazenamento.coletar(self.modulo.nome)
+        print(ultimo_status, self.status)
         if ultimo_status == self.status:
             # o status não mudou
             return
@@ -149,12 +150,15 @@ class TestadorBase:
             texto_status = "🟩 Operacional"
             cor = 0x00ff00
 
+        print("enviando webhook")
+        print(texto_status, cor)
+
         # criando webhook
         webhook = DiscordWebhook(
             url=self.discord_url,
             content=content,
             embeds=[{
-                'title': f'Alerta do {self.NOME}',
+                'title': f'Alerta do Monitor: {self.modulo.nome}',
                 'author': {
                     'name': self.NOME
                 },
@@ -162,16 +166,16 @@ class TestadorBase:
                 'footer': {
                     'text': self.NOME
                 },
-                'fiedls': [
+                'fields': [
                     {
                         'name': 'Status',
                         'value': texto_status,
-                        'inline': True
+                        'inline': False
                     },
                     {
                         'name': 'Informações Adicionais',
                         'value': self.informacao_adicional,
-                        'inline': True
+                        'inline': False
                     }
                 ]
             }]
@@ -180,7 +184,8 @@ class TestadorBase:
         if not r.ok:
             print("Erro ao enviar Discord webhook")
 
-        self.armazenamento.guardar(self.modulo.nome, self.status)
+        if self.armazenamento:
+            self.armazenamento.guardar(self.modulo.nome, self.status)
 
     def notificar_statuspage(self):
         pass
@@ -217,9 +222,6 @@ class TestadorHTTP(TestadorBase):
             # remove a informacao do modulo no prometheus
             Prometheus.delete(TipoPrometheus.STATUS_CODE, self.modulo.nome)
 
-        if self.armazenamento is not None:
-            self.armazenamento.guardar(self.modulo.nome, self.status)
-
 
 class TestadorPort(TestadorBase):
     def testar_port(self):
@@ -236,6 +238,3 @@ class TestadorPort(TestadorBase):
             _socket.close()
         except:     # noqa
             self.status = Status.MAJOR_OUTAGE
-
-        if self.armazenamento is not None:
-            self.armazenamento.guardar(self.modulo.nome, self.status)

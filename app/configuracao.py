@@ -1,9 +1,15 @@
-# global packages
+"""configuracao.py
+
+Contém a classe Configuracao, que permite criar todos os modelos de configuração a partir de um arquivo TOML
+
+Um exemplo de arquivo TOML pode ser encontrado em `example.config.toml`
+"""
+
 import tomli
-# local packages
+
 from .enums import TipoModulo, TipoMetodoHTTP
 from .models import ParamsHTTP, ParamsPort, Modulo, ConfigDiscord, ConfigStatuspage, ConfigRedis
-# typing packages
+
 from typing import Dict, List, Optional
 
 
@@ -95,30 +101,36 @@ class Configuracao:
 
     @property
     def interval(self) -> int:
+        """Intervalo entre os testes"""
         if self._interval is None:
             raise RuntimeError("Configuração não efetuada com sucesso [interval é None]")
         return self._interval
 
     @property
     def port(self):
+        """Porta para servir o client para o prometheus"""
         if self._porta is None:
             raise RuntimeError("Configuração não efetuada com sucesso [porta é None]")
         return self._porta
 
     @property
     def statuspage(self) -> ConfigStatuspage:
+        """Configurações da statuspage"""
         return self._statuspage
 
     @property
     def discord(self) -> ConfigDiscord:
+        """Configurações do discord"""
         return self._discord
 
     @property
     def redis(self) -> ConfigRedis:
+        """Configurações do redis"""
         return self._redis
 
     @property
     def modules(self) -> List[Modulo]:
+        """Lista de módulos a serem testados"""
         if not self._modules:
             raise RuntimeError("Lista de módulos vazia")
         return self._modules

@@ -1,13 +1,18 @@
-# global packages
+"""main.py
+
+Contém o script para iniciar o loop de testadores
+e do client do prometheus
+"""
 from time import sleep
 from threading import Thread
 from prometheus_client import start_http_server
-# local packages
-from app.models import TipoModulo
-from app.armazenamento import Armazenamento
+
+from app.prom import Prometheus
+from app.enums import TipoModulo
 from app.configuracao import Configuracao
+from app.armazenamento import Armazenamento
 from app.testador import TestadorPort, TestadorHTTP
-# typing packages
+
 from typing import List
 from app.models import Modulo
 from app.testador import TestadorBase
@@ -16,12 +21,12 @@ if __name__ == "__main__":
     # cria as configurações
     c = Configuracao('config.toml')
 
-    # importa o prom para ele inicializar os gauges
-    import app.prom
+    # cria os gauges do client do prometheus
+    Prometheus.start()
 
-    # inicializa o prometheus
+    # inicializa o client do prometheus
     start_http_server(port=c.port)
-    print(f"Servindo status na porta {c.port}")
+    print(f"Servindo client na porta {c.port}")
 
     # criando os testadores
     testadores: List[TestadorBase] = []
@@ -52,11 +57,13 @@ if __name__ == "__main__":
             print(f"Executando testador {t.modulo.nome}")
             thread = Thread(target=t.testar)
             thread.start()
-        # no final de tudo, dorme o tempo necessario
+
+        # apos todos os testadores, dorme o tempo necessario
         print(f"Indo dormir por {c.interval} segundos")
         try:
             sleep(c.interval)
         except KeyboardInterrupt:
+            # para o loop com um CTRL+C
             break
 
     print("Fechando...")

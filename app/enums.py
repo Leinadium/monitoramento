@@ -1,3 +1,8 @@
+"""enums.py
+
+Contém os enumeradores utilizados no projeto
+"""
+
 from enum import Enum
 
 

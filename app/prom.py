@@ -15,21 +15,38 @@ class TipoPrometheus(Enum):
 
 
 class Prometheus:
-    _gauge_status: Gauge = Gauge(
-        name='monitor_status',
-        documentation='Status of the specific monitor',
-        labelnames=[_MAIN_LABEL_NAME]
-    )
-    _gauge_test_duration: Gauge = Gauge(
-        name='monitor_test_duration',
-        documentation='Test duration for the specific monitor',
-        labelnames=[_MAIN_LABEL_NAME]
-    )
-    _gauge_status_code: Gauge = Gauge(
-        name='monitor_http_status_code',
-        documentation='Status code of the last probe',
-        labelnames=[_MAIN_LABEL_NAME]
-    )
+    """Classe contendo os gauges para serem coletados pelo processo do Prometheus
+
+    Os Gauges implementados são:
+        status,
+        test_duration,
+        status_code
+    """
+    _gauge_status: Optional[Gauge] = None
+    _gauge_test_duration: Optional[Gauge] = None
+    _gauge_status_code: Optional[Gauge] = None
+
+    @classmethod
+    def start(cls):
+        """Cria os Gauges do Prometheus
+
+        Necessário ser executado antes de usar as outras funções
+        """
+        cls._gauge_status = Gauge(
+            name='monitor_status',
+            documentation='Status of the specific monitor',
+            labelnames=[_MAIN_LABEL_NAME]
+        )
+        cls._gauge_test_duration: Gauge = Gauge(
+            name='monitor_test_duration',
+            documentation='Test duration for the specific monitor',
+            labelnames=[_MAIN_LABEL_NAME]
+        )
+        cls._gauge_status_code: Gauge = Gauge(
+            name='monitor_http_status_code',
+            documentation='Status code of the last probe',
+            labelnames=[_MAIN_LABEL_NAME]
+        )
 
     @classmethod
     def _match(cls, tipo: TipoPrometheus) -> Optional[Gauge]:

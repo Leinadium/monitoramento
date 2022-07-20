@@ -4,12 +4,12 @@ Contém a implementação do armazenamento de informações para o projeto.
 
 Utiliza o banco de dados Redis
 """
-# global packages
+
 from redis import Redis
-# local packages
+
 from .enums import Status
-# typing packages
-from typing import Optional
+
+from typing import Optional, Union
 
 
 class Armazenamento:
@@ -35,24 +35,30 @@ class Armazenamento:
     def coletar(self, chave) -> Optional[Status]:
         """Coleta um status do banco de dados
 
+        Retorna o status armazenado no banco, ou None se for um valor inválido
+        ou não houver um status no banco com aquela chave
+
         Args:
             chave (str): chave para ser coletada do banco de dados
         """
         x: Optional[bytes] = self._client.get(self._get_redis_key(chave))
         ret: Optional[Status] = None
-        if x.isdigit():
+        if x is not None and x.isdigit():
             try:
                 ret = Status(int(x))
             except ValueError:
                 pass
         return ret
 
-    def guardar(self, chave: str, valor: Status):
+    def guardar(self, chave: str, valor: Union[Status, int]):
         """Armazena um status no banco de dados
 
         Args:
             chave (str): chave a ser usada para armazenar o valor
-            valor (str): valor a ser armazenado no banco de dados
+            valor (Status): valor a ser armazenado no banco de dados
+
+        Raises:
+            RuntimeError: Se `valor` for um objeto inválido
         """
         if isinstance(valor, Status):
             v = valor.value
