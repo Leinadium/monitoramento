@@ -8,15 +8,15 @@ from time import sleep
 from threading import Thread
 from prometheus_client import start_http_server
 
-from app.prom import Prometheus
-from app.enums import TipoModulo
-from app.configuracao import Configuracao
-from app.armazenamento import Armazenamento
-from app.testador import TestadorPort, TestadorHTTP
+from prom import Prometheus
+from enums import TipoModulo
+from configuracao import Configuracao
+from armazenamento import Armazenamento
+from testador import TestadorPort, TestadorHTTP
 
 from typing import List
-from app.models import Modulo
-from app.testador import TestadorBase
+from models import Modulo
+from testador import TestadorBase
 
 if __name__ == "__main__":
     # biblioteca de log
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     )
 
     # cria as configurações
-    c = Configuracao('config.toml')
+    c = Configuracao('config2.toml')
     logging.info("Configurações carregadas")
 
     # cria os gauges do client do prometheus
@@ -74,4 +74,3 @@ if __name__ == "__main__":
             break
 
     logging.info("Fechando...")
-

@@ -76,17 +76,21 @@ class Prometheus:
         return x.labels([label])
 
     @classmethod
-    def delete(cls, tipo: TipoPrometheus, label: str) -> None:
+    def delete(cls, tipo: TipoPrometheus, _label: str) -> None:
         """Semelhante ao `Delete` de um GaugeVec
+
+        OBS: Não está sendo possível remover labels. Por isso,
+        essa função simplesmente não faz nada
 
         Args:
             tipo (TipoPrometheus): tipo de gauge a ser removido
-            label (str): label do gauge a ser removido
+            _label (str): label do gauge a ser removido
         """
         x: Optional[Gauge] = cls._match(tipo)
 
         if x is None:
             raise RuntimeError(f'Tipo de gauge {tipo} não suportado')
 
-        x.remove([label])
+        # x.remove(label)               # -> KeyError
+        # x.labels([label]).clear()     # -> no ._lock in Gauge
         return

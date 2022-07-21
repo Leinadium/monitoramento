@@ -8,7 +8,7 @@ __all__ = ["ParamsHTTP", "ParamsPort", "Modulo", "ConfigDiscord", "ConfigStatusp
 
 from dataclasses import dataclass
 
-from .enums import TipoModulo, TipoMetodoHTTP
+from enums import TipoModulo, TipoMetodoHTTP
 
 from typing import List, Union
 

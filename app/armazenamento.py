@@ -7,7 +7,7 @@ Utiliza o banco de dados Redis
 
 from redis import Redis
 
-from .enums import Status
+from enums import Status
 
 from typing import Optional, Union
 

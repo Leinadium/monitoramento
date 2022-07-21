@@ -7,12 +7,12 @@ import logging
 from time import time
 from requests import get, post, Response
 from discord_webhook import DiscordWebhook
-from requests.exceptions import ConnectTimeout
+from requests.exceptions import ConnectTimeout, ConnectionError
 
-from .armazenamento import Armazenamento
-from .enums import TipoMetodoHTTP, Status
-from .prom import TipoPrometheus, Prometheus
-from .models import Modulo, ConfigDiscord, ConfigStatuspage
+from armazenamento import Armazenamento
+from enums import TipoMetodoHTTP, Status
+from prom import TipoPrometheus, Prometheus
+from models import Modulo, ConfigDiscord, ConfigStatuspage
 
 from typing import Optional
 
@@ -98,7 +98,6 @@ class TestadorBase:
             Prometheus.get(TipoPrometheus.TEST_DURATION, self.modulo.nome).set(self.duracao)
 
         logging.info("Teste realizado -> Status: %s, Duracao: %0.3fs", self.status.nome(), self.duracao)
-
 
     def notificar_discord(self):
         """Notifica o status do módulo no Discord caso o status atual seja diferente do
@@ -224,7 +223,7 @@ class TestadorHTTP(TestadorBase):
             # atualiza a informacao adicional do módulo
             self.informacao_adicional = f'{_resposta.status_code} - {_resposta.reason}'
 
-        except (ConnectTimeout, RuntimeError) as e:
+        except (ConnectTimeout, ConnectionError, RuntimeError) as e:
             self.status = None
             self.informacao_adicional = str(e)
             # remove a informacao do modulo no prometheus

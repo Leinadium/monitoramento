@@ -8,8 +8,8 @@ Um exemplo de arquivo TOML pode ser encontrado em `example.config.toml`
 import tomli
 import logging
 
-from .enums import TipoModulo, TipoMetodoHTTP
-from .models import ParamsHTTP, ParamsPort, Modulo, ConfigDiscord, ConfigStatuspage, ConfigRedis
+from enums import TipoModulo, TipoMetodoHTTP
+from models import ParamsHTTP, ParamsPort, Modulo, ConfigDiscord, ConfigStatuspage, ConfigRedis
 
 from typing import Dict, List, Optional
 
