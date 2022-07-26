@@ -3,3 +3,4 @@ prometheus-client
 redis
 discord-webhook
 tomli
+flask
