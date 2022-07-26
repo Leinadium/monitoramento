@@ -10,6 +10,7 @@ class TipoModulo(Enum):
     """Tipos possíveis de módulo"""
     HTTP = 1
     PORT = 2
+    SIZE = 3
 
 
 class TipoMetodoHTTP(Enum):

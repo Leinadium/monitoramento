@@ -9,7 +9,8 @@ import tomli
 import logging
 
 from enums import TipoModulo, TipoMetodoHTTP
-from models import ParamsHTTP, ParamsPort, Modulo, ConfigDiscord, ConfigStatuspage, ConfigRedis
+from models import ParamsHTTP, ParamsPort, ParamsSize
+from models import Modulo, ConfigDiscord, ConfigStatuspage, ConfigRedis
 
 from typing import Dict, List, Optional
 
@@ -80,6 +81,13 @@ class Configuracao:
                         params = ParamsPort(
                             host=t['host'],
                             port=t['port']
+                        )
+                    elif t['type'] == 'size':
+                        tipo = TipoModulo.SIZE
+                        params = ParamsSize(
+                            url=t['url'],
+                            metodo=TipoMetodoHTTP.GET if t['method'].lower() == 'get' else TipoMetodoHTTP.POST
+
                         )
                     else:
                         # tipo invalido. pulando...

@@ -10,8 +10,9 @@ class TipoPrometheus(Enum):
     STATUS = 1              # [USO COMUM] status
     TEST_DURATION = 2       # [USO COMUM] duracao do teste
     STATUS_CODE = 3         # [HTTP] código http
-    VERSION = 4             # [HTTP] versao do http
-    SSL = 5                 # [HTTP] versao SSL usada
+    # VERSION = 4             # [HTTP] versao do http
+    # SSL = 5                 # [HTTP] versao SSL usada
+    SIZE = 6                # [SIZE] espaço (bytes) livres
 
 
 class Prometheus:
@@ -25,6 +26,7 @@ class Prometheus:
     _gauge_status: Optional[Gauge] = None
     _gauge_test_duration: Optional[Gauge] = None
     _gauge_status_code: Optional[Gauge] = None
+    _gauge_size: Optional[Gauge] = None
 
     @classmethod
     def start(cls):
@@ -47,6 +49,11 @@ class Prometheus:
             documentation='Status code of the last probe',
             labelnames=[_MAIN_LABEL_NAME]
         )
+        cls._gauge_size: Gauge = Gauge(
+            name='monitor_size',
+            documentation='Free space available for the specific monitor',
+            labelnames=[_MAIN_LABEL_NAME]
+        )
 
     @classmethod
     def _match(cls, tipo: TipoPrometheus) -> Optional[Gauge]:
@@ -57,6 +64,8 @@ class Prometheus:
             return cls._gauge_test_duration
         elif tipo == TipoPrometheus.STATUS_CODE:
             return cls._gauge_status_code
+        elif tipo == TipoPrometheus.SIZE:
+            return cls._gauge_size
         else:
             return None
 

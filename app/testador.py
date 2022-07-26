@@ -5,9 +5,9 @@ Contém a implementação da classe Testador, que faz os testes do projeto
 import socket
 import logging
 from time import time
-from requests import get, post, Response
+from requests import get, post, put, Response
 from discord_webhook import DiscordWebhook
-from requests.exceptions import ConnectTimeout, ConnectionError
+from requests.exceptions import ConnectTimeout, ConnectionError, JSONDecodeError
 
 from armazenamento import Armazenamento
 from enums import TipoMetodoHTTP, Status
@@ -66,6 +66,10 @@ class TestadorBase:
         """Faz o teste para o módulo caso seja do tipo Port"""
         pass
 
+    def testar_size(self):
+        """Faz o teste para o módulo caso seja do tipo Size"""
+        pass
+
     def testar_custom(self):
         """Faz o teste customizado do módulo"""
         pass
@@ -84,6 +88,7 @@ class TestadorBase:
 
         self.testar_http()
         self.testar_port()
+        self.testar_size()
         self.testar_custom()
 
         self.duracao = time() - _tempo
@@ -97,7 +102,14 @@ class TestadorBase:
             # atualiza a duracao do teste do modulo
             Prometheus.get(TipoPrometheus.TEST_DURATION, self.modulo.nome).set(self.duracao)
 
-        logging.info("Teste realizado -> Status: %s, Duracao: %0.3fs", self.status.nome(), self.duracao)
+        if self.armazenamento:
+            self.armazenamento.guardar(self.modulo.nome, self.status)
+
+        logging.info("Teste realizado: {status: %s, duracao: %0.3fs, infos: %s}",
+                     self.status.nome(),
+                     self.duracao,
+                     self.informacao_adicional
+        )
 
     def notificar_discord(self):
         """Notifica o status do módulo no Discord caso o status atual seja diferente do
@@ -191,11 +203,35 @@ class TestadorBase:
         if not r.ok:
             logging.error("Erro ao enviar webhook discord para o módulo %s", self.modulo.nome)
 
-        if self.armazenamento:
-            self.armazenamento.guardar(self.modulo.nome, self.status)
 
     def notificar_statuspage(self):
-        pass
+        """Faz um request para a api da statuspage.io utilizando o component_id e o token do módulo.
+
+        O request possui o identificador do component, o token, e o nome do status atual.
+        Caso self.statuspage seja nulo, a função não executa nada.
+        """
+        if self.statuspage is None:
+            return
+
+        r: Response = put(
+            url=f'https://api.statuspage.io/v1/pages/{self.statuspage.page_id}/components/{self.modulo.statuspage}',
+            headers={
+                'Authorization': self.statuspage.api_key,
+                'Content-Type': 'application/json',
+            },
+            data={
+                'component': {
+                    'status': self.status.nome()
+                }
+            }
+        )
+
+        if r.status_code in [401, 404, 422]:
+            try:
+                logging.error('Erro ao enviar componente para statuspage [%s]: %s', r.status_code, r.json()['message'])
+            except KeyError:
+                logging.error("Erro ao enviar component para statuspage, e a resposta json foi inválida")
+        return
 
 
 class TestadorHTTP(TestadorBase):
@@ -222,8 +258,10 @@ class TestadorHTTP(TestadorBase):
                 self.status = Status.MAJOR_OUTAGE
             # atualiza a informacao adicional do módulo
             self.informacao_adicional = f'{_resposta.status_code} - {_resposta.reason}'
+            Prometheus.get(TipoPrometheus.STATUS_CODE, self.modulo.nome).set(_resposta.status_code)
 
         except (ConnectTimeout, ConnectionError, RuntimeError) as e:
+            logging.error("Erro ao testar HTTP do modulo %s: %s", self.modulo.nome, e)
             self.status = None
             self.informacao_adicional = str(e)
             # remove a informacao do modulo no prometheus
@@ -243,5 +281,43 @@ class TestadorPort(TestadorBase):
             _url = self.modulo.params.url
             self.status = Status.OPERATIONAL if _socket.connect_ex((_url, _port)) == 0 else Status.MAJOR_OUTAGE
             _socket.close()
-        except:     # noqa
+        except Exception as e:     # noqa
+            logging.error("Erro ao testar PORT do modulo %s: %s", self.modulo.nome, e)
             self.status = Status.MAJOR_OUTAGE
+
+
+class TestadorSize(TestadorBase):
+    def testar_size(self):
+        _url = self.modulo.params.url
+        _metodo = self.modulo.params.metodo
+
+        try:
+            if _metodo == TipoMetodoHTTP.GET:
+                _resposta = get(_url, timeout=5)
+            elif _metodo == TipoMetodoHTTP.POST:
+                _resposta = post(_url, timeout=5)
+            else:
+                raise RuntimeError("Método HTTP não suportado")
+
+            status_code = _resposta.status_code
+            conteudo = _resposta.json()
+            porcentagem = conteudo['porcentagem']
+            if porcentagem < 0.5:
+                self.status = Status.OPERATIONAL
+            elif porcentagem < 0.7:
+                self.status = Status.DEGRADED_PERFORMANCE
+            elif porcentagem < 0.9:
+                self.status = Status.PARTIAL_OUTAGE
+            else:
+                self.status = Status.MAJOR_OUTAGE
+
+            self.informacao_adicional = f'Ocupação: {porcentagem:.0%}'
+            Prometheus.get(TipoPrometheus.SIZE, self.modulo.nome).set(porcentagem)
+            Prometheus.get(TipoPrometheus.STATUS_CODE, self.modulo.nome).set(status_code)
+
+        except (ConnectTimeout, ConnectionError, RuntimeError, JSONDecodeError, KeyError) as e:
+            logging.error("Erro ao testar SIZE do modulo %s: %s", self.modulo.nome, e)
+            self.status = None
+            self.informacao_adicional = str(e)
+            Prometheus.delete(TipoPrometheus.STATUS_CODE, self.modulo.nome)
+            Prometheus.delete(TipoPrometheus.SIZE, self.modulo.nome)

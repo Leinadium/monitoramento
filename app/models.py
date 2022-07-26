@@ -4,7 +4,11 @@ Contém a implementação da dataclass `Modulo`,
 que permite armazenar informações sobre um módulo a ser testado
 """
 
-__all__ = ["ParamsHTTP", "ParamsPort", "Modulo", "ConfigDiscord", "ConfigStatuspage", "ConfigRedis"]
+__all__ = [
+    "Modulo",
+    "ParamsHTTP", "ParamsPort", "ParamsSize",
+    "ConfigDiscord", "ConfigStatuspage", "ConfigRedis"
+]
 
 from dataclasses import dataclass
 
@@ -21,6 +25,13 @@ class ParamsHTTP:
 
 
 @dataclass
+class ParamsSize:
+    """Parâmetros de um módulo SIZE"""
+    url: str
+    metodo: TipoMetodoHTTP
+
+
+@dataclass
 class ParamsPort:
     """Parâmetros de um módulo PORT"""
     host: str
@@ -32,7 +43,7 @@ class Modulo:
     """Informações de um módulo a ser testado"""
     nome: str
     tipo: TipoModulo
-    params: Union[ParamsHTTP, ParamsPort]
+    params: Union[ParamsHTTP, ParamsPort, ParamsSize]
     discords: List[str]
     statuspage: str
 

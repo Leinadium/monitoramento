@@ -12,7 +12,7 @@ from prom import Prometheus
 from enums import TipoModulo
 from configuracao import Configuracao
 from armazenamento import Armazenamento
-from testador import TestadorPort, TestadorHTTP
+from testador import TestadorPort, TestadorHTTP, TestadorSize
 
 from typing import List
 from models import Modulo
@@ -47,6 +47,13 @@ if __name__ == "__main__":
             )
         elif m.tipo == TipoModulo.PORT:
             testador = TestadorPort(
+                modulo=m,
+                armazenamento=Armazenamento(c.redis.host, c.redis.port),
+                discord=c.discord,
+                statuspage=c.statuspage
+            )
+        elif m.tipo == TipoModulo.SIZE:
+            testador = TestadorSize(
                 modulo=m,
                 armazenamento=Armazenamento(c.redis.host, c.redis.port),
                 discord=c.discord,
