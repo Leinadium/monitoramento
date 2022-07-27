@@ -53,6 +53,8 @@ class Armazenamento:
     def guardar(self, chave: str, valor: Union[Status, int]):
         """Armazena um status no banco de dados
 
+        Se valor for None, a função não será executada
+
         Args:
             chave (str): chave a ser usada para armazenar o valor
             valor (Status): valor a ser armazenado no banco de dados
@@ -60,6 +62,8 @@ class Armazenamento:
         Raises:
             RuntimeError: Se `valor` for um objeto inválido
         """
+        if valor is None:
+            return
         if isinstance(valor, Status):
             v = valor.value
         elif isinstance(valor, int):

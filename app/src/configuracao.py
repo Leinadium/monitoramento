@@ -34,8 +34,12 @@ class Configuracao:
         """
 
         # le o arquivo de configuração
-        with open(path_para_arquivo, 'rb') as f:
-            self._json: Dict = tomli.load(f)
+        try:
+            with open(path_para_arquivo, 'rb') as f:
+                self._json: Dict = tomli.load(f)
+        except FileNotFoundError:
+            logging.error("Arquivo %s não encontrado", path_para_arquivo)
+            exit(-1)
 
         # prepara as variaveis
         self._interval: int = -1

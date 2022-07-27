@@ -109,7 +109,7 @@ class TestadorBase:
                      self.status.nome(),
                      self.duracao,
                      self.informacao_adicional
-        )
+                     )
 
     def notificar_discord(self):
         """Notifica o status do módulo no Discord caso o status atual seja diferente do
@@ -161,7 +161,7 @@ class TestadorBase:
 
         texto_status = "⚠️Problemas"
         cor = 0xff0000
-        if self.status == self.status.OPERATIONAL:
+        if self.status == Status.OPERATIONAL:
             texto_status = "🟩 Operacional"
             cor = 0x00ff00
 
@@ -203,14 +203,14 @@ class TestadorBase:
         if not r.ok:
             logging.error("Erro ao enviar webhook discord para o módulo %s", self.modulo.nome)
 
-
     def notificar_statuspage(self):
         """Faz um request para a api da statuspage.io utilizando o component_id e o token do módulo.
 
         O request possui o identificador do component, o token, e o nome do status atual.
         Caso self.statuspage seja nulo, a função não executa nada.
+        Caso self.status seja nulo, a função não executa nada
         """
-        if self.statuspage is None:
+        if self.statuspage is None or self.status is None:
             return
 
         r: Response = put(
@@ -238,7 +238,7 @@ class TestadorHTTP(TestadorBase):
     def testar_http(self):
         _url = self.modulo.params.url
         _metodo = self.modulo.params.metodo
-        self.status = Status.MAJOR_OUTAGE   # default status
+        self.status = Status.MAJOR_OUTAGE  # default status
         self.informacao_adicional = '-'
 
         try:
@@ -262,7 +262,7 @@ class TestadorHTTP(TestadorBase):
 
         except (ConnectTimeout, ConnectionError, RuntimeError) as e:
             logging.error("Erro ao testar HTTP do modulo %s: %s", self.modulo.nome, e)
-            self.status = None
+            self.status = Status.MAJOR_OUTAGE
             self.informacao_adicional = str(e)
             # remove a informacao do modulo no prometheus
             Prometheus.delete(TipoPrometheus.STATUS_CODE, self.modulo.nome)
@@ -270,7 +270,7 @@ class TestadorHTTP(TestadorBase):
 
 class TestadorPort(TestadorBase):
     def testar_port(self):
-        self.status = Status.MAJOR_OUTAGE   # default status
+        self.status = Status.MAJOR_OUTAGE  # default status
 
         _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         _socket.settimeout(1)
@@ -281,7 +281,7 @@ class TestadorPort(TestadorBase):
             _url = self.modulo.params.url
             self.status = Status.OPERATIONAL if _socket.connect_ex((_url, _port)) == 0 else Status.MAJOR_OUTAGE
             _socket.close()
-        except Exception as e:     # noqa
+        except Exception as e:  # noqa
             logging.error("Erro ao testar PORT do modulo %s: %s", self.modulo.nome, e)
             self.status = Status.MAJOR_OUTAGE
 
