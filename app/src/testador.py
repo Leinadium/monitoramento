@@ -118,32 +118,6 @@ class TestadorBase:
     def notificar_discord(self):
         """Notifica o status do módulo no Discord caso o status atual seja diferente do
         status armazenado no armazenamento.
-
-        Caso o status seja OPERATIONAL, então a mensagem enviada no discord possuirá as seguintes propriedades:
-            Content: <@&{infra_role}> + <@&{n}> para cada n em modulo.discord,
-            Message Embed: {
-                Title: "Alerta do Monitor: {nome do módulo}",
-                Embed Author: "Monitor {versao do testador}",
-                Color: "0x00FF00",
-                Embed Footer: "Monitor {versao do testador}",
-                Embed Fields: [
-                    {Name: "Status", Value: "🟩 Operacional", Inline: False},
-                    {Name: "Informações Adicionais", Value: informacoes_adicionais, Inline: False}
-                ]
-            }
-
-        Caso o status seja outro, então a mensagem enviada no discord possuirá as seguintes propriedades:
-            Content: <@&{infra_role}> + <@&{n}> para cada n em modulo.discord,
-            Message Embed: {
-                Title: "Alerta do Monitor: {nome do módulo}",
-                Author: "Monitor {versao do testador}",
-                Color: "0xFF0000",
-                Embed Footer: "Monitor {versao do testador}",
-                Embed Fields: [
-                    {Name: "Status", Value: "⚠️Problemas", Inline: False},
-                    {Name: "Informações Adicionais", Value: informacoes_adicionais, Inline: False}
-                ]
-            }
         """
         if self.discord is None or not self.armazenamento:
             # discord não configurado
@@ -164,10 +138,14 @@ class TestadorBase:
         ])
 
         texto_status = "⚠️Problemas"
-        cor = 0xff0000
+        cor = 0xffff00
         if self.status == Status.OPERATIONAL:
-            texto_status = "🟩 Operacional"
+            texto_status = "🟩   Operacional"
             cor = 0x00ff00
+
+        if self.status == Status.MAJOR_OUTAGE:
+            texto_status = "❌   Fora do Ar"
+            cor = 0xff0000
 
         logging.info(
             "Enviando webhook do discord para o módulo %s com estado %s",
