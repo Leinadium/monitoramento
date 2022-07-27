@@ -260,7 +260,7 @@ class TestadorPort(TestadorBase):
         # se conectar na porta, _status será True
         try:
             _port = self.modulo.params.port
-            _url = self.modulo.params.url
+            _url = self.modulo.params.host
             self.status = Status.OPERATIONAL if _socket.connect_ex((_url, _port)) == 0 else Status.MAJOR_OUTAGE
             _socket.close()
         except Exception as e:  # noqa
