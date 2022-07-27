@@ -17,8 +17,6 @@ services:
     build:
       context: ../app
       dockerfile: Dockerfile
-    volumes:
-      - "./app:/code"
     ports:
       - "2112:2112"
     depends_on:

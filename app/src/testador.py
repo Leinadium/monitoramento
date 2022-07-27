@@ -23,8 +23,12 @@ class TestadorBase:
     Contém todos os métodos obrigatórios de um testador
     """
 
-    VERSAO = '1.0'
+    VERSAO = '1.4'
     NOME = f'Monitor (Leinadium v{VERSAO})'
+
+    @classmethod
+    def set_version(cls, versao: str):
+        cls.VERSAO = versao
 
     def __init__(self,
                  modulo: Modulo,

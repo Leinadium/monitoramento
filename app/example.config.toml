@@ -1,3 +1,6 @@
+# versão do programa
+version = 1.0
+
 # intervalo (em segundos) do testador
 interval = 120
 
@@ -27,7 +30,7 @@ port = 2112
     notify = ["123", "456"]             # ids para serem notificados (para discord)
 
     # define o teste para ser executado
-    # tipo pode ser HTTP, PORT, CUSTOM)
+    # tipo pode ser HTTP, PORT, SIZE ou CUSTOM
     # apesar de suportado pelo TOML, somente usar um tipo de teste por módulo
     # pois o nome do módulo será identico para cada teste
 
@@ -43,7 +46,15 @@ port = 2112
         host = "localhost"              # host da porta
         port = 8080                     # numero da porta
 
+    # exemplo para tipo SIZE
+    [[modules.test]]
+        type = "size"
+        url = "site.com/monitor/teste_de_tamanho"
+        method = "get"
+
     # exemplo para tipo CUSTOM  (NAO IMPLEMENTADO)
     [[modules.test]]
         type = "custom"
         runnable = "a/b/c"              # path do executável
+
+

@@ -8,4 +8,4 @@ global:
 scrape_configs:
   - job_name: 'monitor'
     static_configs:
-      - targets: ['monitor:2112']
+      - targets: ['monitor:2112']   # ip do monitor é "monitor" devido ao uso com docker

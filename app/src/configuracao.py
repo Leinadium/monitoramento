@@ -42,8 +42,9 @@ class Configuracao:
             exit(-1)
 
         # prepara as variaveis
-        self._interval: int = -1
+        self._versao: str = ""
         self._porta: int = -2
+        self._interval: int = -1
         self._statuspage: Optional[ConfigStatuspage] = None
         self._discord: Optional[ConfigDiscord] = None
         self._redis: Optional[ConfigRedis] = None
@@ -51,6 +52,7 @@ class Configuracao:
 
         # faz o parsing do json
         try:
+            self._versao = self._json['version']
             self._interval = self._json['interval']
             self._porta = self._json['port']
             self._statuspage = ConfigStatuspage(
@@ -66,6 +68,8 @@ class Configuracao:
                 host=self._json['redis']['host'],
                 port=self._json['redis']['port']
             )
+            # salvando a versao
+
             # indo para cada modulo encontrado
             for m in self._json['modules']:
                 nome = m['name']
@@ -111,6 +115,11 @@ class Configuracao:
         except IndexError as e:
             logging.exception("Indice inválido na configuração: %s", e)
             raise InvalidConfigFile()
+
+    @property
+    def version(self):
+        """Versão do programa do monitor"""
+        return self._versao
 
     @property
     def interval(self) -> int:

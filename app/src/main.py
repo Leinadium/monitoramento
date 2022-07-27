@@ -27,7 +27,7 @@ if __name__ == "__main__":
     )
 
     # cria as configurações
-    c = Configuracao('config2.toml')
+    c = Configuracao('config.toml')
     logging.info("Configurações carregadas")
 
     # cria os gauges do client do prometheus
@@ -36,7 +36,9 @@ if __name__ == "__main__":
     logging.info(f"Servindo client na porta {c.port}")
 
     # criando os testadores
+    TestadorBase.set_version(c.version)
     testadores: List[TestadorBase] = []
+
     for m in c.modules:     # type: Modulo
         if m.tipo == TipoModulo.HTTP:
             testador = TestadorHTTP(

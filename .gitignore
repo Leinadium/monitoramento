@@ -1,7 +1,13 @@
+# python stuff
 **/*.pyc
 **/__pycache__
 
+# idea stuff
 .idea/
 venv/
 
+# não commitando as configurações usadas
 config.toml
+
+# removendo coisas do docker
+grafana
