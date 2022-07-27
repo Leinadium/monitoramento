@@ -4,17 +4,14 @@ services:
   redis:
     image: redis:7.0-alpine
     ports:
-      - '6379:6379'
+      - '6379'
 
   monitor:
     build:
       context: ./app
       dockerfile: Dockerfile
-    volumes:
-      - "./app:/code"
     ports:
-      - "2112"
-      - "5000"
+      - "2112:2112"
     depends_on:
       - redis
     # extra_hosts:
