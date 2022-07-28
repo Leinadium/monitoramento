@@ -14,19 +14,6 @@ services:
       - "2112:2112"
     depends_on:
       - redis
-    # extra_hosts:
-    #   - "intercambio.biobd.inf.puc-rio.br:10.0.0.15"
-    #   - "neam.biobd.inf.puc-rio.br:10.0.2.10"
-    #   - "etc.biobd.inf.puc-rio.br:10.0.2.11"
-    #   - "buscanima.biobd.inf.puc-rio.br:10.0.2.12"
-    #   - "enem.biobd.inf.puc-rio.br:10.0.2.13"
-    #   - "quemnapuc.biobd.inf.puc-rio.br:10.0.2.12"
-    #   - "quempuc.biobd.inf.puc-rio.br:10.0.2.12"
-    #   - "biobd.inf.puc-rio.br:10.0.2.28"
-    #   - "donare.biobd.inf.puc-rio.br:10.0.2.23"
-    #   - "elo.donare.biobd.inf.puc-rio.br:10.0.2.23"
-    #   - "solid.biobd.inf.puc-rio.br:10.0.2.22"
-    #   - "handson.biobd.inf.puc-rio.br:10.0.2.31"
 
   prometheus:
     image: prom/prometheus:latest
