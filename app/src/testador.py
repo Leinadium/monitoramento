@@ -299,7 +299,7 @@ class TestadorSize(TestadorBase):
 
         except (ConnectTimeout, ConnectionError, RuntimeError, JSONDecodeError, KeyError) as e:
             logging.error("Erro ao testar SIZE do modulo %s: %s", self.modulo.nome, e)
-            self.status = None
+            self.status = Status.MAJOR_OUTAGE
             self.informacao_adicional = str(e)
             Prometheus.delete(TipoPrometheus.STATUS_CODE, self.modulo.nome)
             Prometheus.delete(TipoPrometheus.SIZE, self.modulo.nome)
